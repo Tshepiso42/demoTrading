@@ -24,8 +24,17 @@ def home(request):
     return render(request, 'index.html', context)
 
 def quote(request):
-    pass
-    return render(request, 'quote.html')
+    if request.method == 'POST':
+        input_symbol = request.POST.get("symbol")
+        stock = stockSearch(input_symbol)
+        stock_name = stock["name"]
+        price = stock["price"]
+        symbol = stock["symbol"]
+        
+        context = {'company': stock_name, 'symbol': symbol, 'price': price}
+        return render(request, 'quoted.html', context)
+    else:
+        return render(request, 'quote.html')
 
 def buy(request):
     current_user = request.user
@@ -47,6 +56,10 @@ def buy(request):
             #Update cash object
             userCashObject.user_cash = user_cashTotal - input_total
             userCashObject.save()
+
+            #Record transaction
+            transaction = History(user=current_user, symbol=symbol, price=price, shares=input_quantity)
+            transaction.save()
 
             obj, created = Stock.objects.get_or_create(user=current_user, symbol=symbol)
             if created:
@@ -91,6 +104,10 @@ def sell(request):
                 userCashObject.user_cash = user_cashTotal + input_total
                 userCashObject.save()
 
+                #Record transaction
+                transaction = History(user=current_user, symbol=symbol, price=price, shares=(-1*input_quantity))
+                transaction.save()
+
                 #Reduce stock quantity or remove object
                 stockObject.shares_quantity -= input_quantity
                 stockObject.save()
@@ -102,4 +119,7 @@ def sell(request):
     return render(request, 'sell.html', context)
 
 def history(request):
-    return render(request, 'history.html')
+    current_user = request.user
+    transactions = History.objects.filter(user=current_user)   
+    context = {'transactions': transactions}  
+    return render(request, 'history.html', context)

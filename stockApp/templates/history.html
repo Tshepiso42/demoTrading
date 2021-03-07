@@ -13,14 +13,14 @@
                 <th>Price</th>
                 <th>Transancted</th>
             </tr>
-          
+            {% for item in transactions %}
             <tr>
-                <td>TSLA</td>
-                <td>Tesla</td>
-                <td>$686.37</td>
-                <td>3 May 2018</td>
+                <td>{{item.symbol}}</td>
+                <td>{{item.shares}}</td>
+                <td>${{item.price}}</td>
+                <td>{{item.created_at}}</td>
             </tr>
-
+            {% endfor %}
         </table>
     </div>
 {% endblock %}
