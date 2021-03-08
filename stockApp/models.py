@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .api_helper import stockSearch
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Stock(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -36,3 +38,11 @@ class Cash(models.Model):
         return "$" + str(round(self.user_cash))
         
 
+@receiver(post_save, sender=User)
+def create_user_cash(sender, instance, created, **kwargs):
+    if created:
+        Cash.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_cash(sender, instance, **kwargs):
+    instance.cash.save()

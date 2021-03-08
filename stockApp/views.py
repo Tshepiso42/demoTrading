@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from .api_helper import stockSearch
 from .models import *
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def home(request):
     current_user = request.user
     stockList = Stock.objects.filter(user=current_user)
@@ -23,6 +26,7 @@ def home(request):
     context = {'stocks': stockList, 'holdings': total_holdings, 'totalCash': UserTotalCash}  
     return render(request, 'index.html', context)
 
+@login_required
 def quote(request):
     if request.method == 'POST':
         input_symbol = request.POST.get("symbol")
@@ -36,6 +40,7 @@ def quote(request):
     else:
         return render(request, 'quote.html')
 
+@login_required
 def buy(request):
     current_user = request.user
 
@@ -50,7 +55,6 @@ def buy(request):
         input_total = price * input_quantity
         userCashObject = Cash.objects.get(user=current_user)
         user_cashTotal = userCashObject.user_cash
-        print(input_total)
         
         if input_total <= user_cashTotal: 
             #Update cash object
@@ -76,6 +80,7 @@ def buy(request):
 
     return render(request, 'buy.html')
 
+@login_required
 def sell(request):
     current_user = request.user
     stockList = Stock.objects.filter(user=current_user)  
@@ -118,6 +123,7 @@ def sell(request):
          
     return render(request, 'sell.html', context)
 
+@login_required
 def history(request):
     current_user = request.user
     transactions = History.objects.filter(user=current_user)   
